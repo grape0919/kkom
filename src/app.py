@@ -1,7 +1,8 @@
 """
 Flask Kakao OAuth Application Sample
 """
-from flask import Flask, render_template, request, jsonify, make_response, send_from_directory
+import json
+from flask import Flask, render_template, request, jsonify, make_response, send_from_directory, redirect
 from flask_jwt_extended import (
     JWTManager, create_access_token, 
     get_jwt_identity, jwt_required,
@@ -11,7 +12,7 @@ from flask_jwt_extended import (
 )
 from config import CLIENT_ID, REDIRECT_URI
 from controller import Oauth
-from model import UserModel, UserData
+from model import TemplateData, TemplateModel, UserModel, UserData
 import os
 
 app = Flask(__name__)
@@ -26,7 +27,7 @@ jwt = JWTManager(app)
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    return redirect("/kkom")
 
 
 @app.route("/auth")
@@ -108,6 +109,15 @@ def oauth_url_api():
         % (CLIENT_ID, REDIRECT_URI)
     )
 
+@app.route('/auth/url/agreements')
+def oauth_agreement_url_api():
+    """
+    Kakao OAuth URL 가져오기
+    """
+    return jsonify(
+        kakao_oauth_url="https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code&scope=friends" \
+        % (CLIENT_ID, REDIRECT_URI)
+    )
 
 @app.route("/auth/refresh", methods=['POST'])
 def oauth_refesh_api():
@@ -134,13 +144,21 @@ def oauth_userinfo_api():
     result = Oauth().userinfo("Bearer " + access_token)
     return jsonify(result)
 
+@app.route("/authw", methods=['GET'])
+def oauth_additional_scope():
+    '''
+    추가 동의 요청
+    ''' 
+
 @app.route("/kkom")
 def kkom():
     '''
     kkom 메인페이지
     '''
     
-    return render_template("main.html")
+    temps = TemplateModel().get_all_val()
+    
+    return render_template("main.html", values=temps)
 
 @app.route("/kkom/friends", methods=["GET"])
 @jwt_required
@@ -152,16 +170,108 @@ def get_friends():
     friends = Oauth().friends("Bearer " + access_token)
     return jsonify(friends)
     
-@app.route("/kkom/template_val", methods=["GET"])
-def get_value():
-    '''
-    template value 가져오기
-    '''
     
+@app.route("/kkom/addval", methods=["POST"])
+def add_value():
+    '''
+    template value 등록하기
+    '''
+    try:
+        req = request.get_json()
+        temp = {}
+        temp['key'] = req['val_name']
+        temp['value'] = ""
+        
+        temp = TemplateData(temp)
+        TemplateModel().upsert_key(temp)
+    
+        msg= "succeed"
+        
+        status_code = 200
+        
+    except:
+        msg= "저장 실패"
+        status_code = 500
+        
+    return jsonify({"mag":msg, "code":status_code})
+
+@app.route("/kkom/delval", methods=["DELETE"])
+def del_value():
+    '''
+    template value 삭제하기
+    '''
+    try:
+        req = request.get_json()
+        val_name = req['val_name']
+        
+        TemplateModel().remove_val(val_name)
+    
+        msg= "succeed"
+        
+        status_code = 200
+        
+    except:
+        msg= "저장 실패"
+        status_code = 500
+        
+    return jsonify({"mag":msg, "code":status_code})
+
+@app.route("/kkom/savetemp", methods=["PUT"])
+def save_value():
+    '''
+    template value 저장하기
+    '''
+    try:
+        req = request.get_json()
+        id = req['template_id']
+        val_list:dict = req['template_args']
+        
+        data = {"key": "template_id", "value":id.strip()}
+        data = TemplateData(data)
+        TemplateModel().upsert_key(data)
+    
+        for k, v in val_list.items():
+            data = {"key": k.strip(), "value":v.strip()}
+            data = TemplateData(data)
+            TemplateModel().upsert_key(data)
+    
+        msg= "succeed"
+        status_code = 200
+        
+    except:
+        msg= "저장 실패"
+        status_code = 500
+        
+    return jsonify({"mag":msg, "code":status_code})
+    
+
+@app.route("/kkom/sendme", methods=["POST"])
+def sendme():
+    '''
+    나에게 보내기
+    '''
+    req = request.get_json()
+    template_id = req["template_id"]
+    template_args = req["template_args"]
+    
+    access_token = request.cookies.get('kakako_access_token')
+    
+    result = Oauth().sendme("Bearer " + access_token, template_id, json.dumps(template_args, ensure_ascii=True))
+    
+    if "result_code" in result:
+        result = {
+        "msg" : "succeed",
+        "code" : 200
+        }
+        
+    return jsonify(result)
 
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
                                'kkom.ico', mimetype='image/vnd.microsoft.icon')
+    
+import webbrowser
+
 if __name__ == '__main__':
-    app.run(port=80, debug=True)
+    app.run(host="0.0.0.0",port=80, debug=True)    

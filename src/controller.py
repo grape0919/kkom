@@ -49,14 +49,27 @@ class Oauth:
             data={}
         ).json()
         
-        
     def friends(self, bearer_token):
-        return requests.get(
+        req = requests.get(
             url=self.api_server % "/v1/api/talk/friends",
             headers={
                 **self.default_header,
                 **{"Authorization": bearer_token}
             },data={}
+        )
+        return req.json()
+
+        
+    def sendme(self, bearer_token, template_id, template_args):
+        return requests.post(
+            url=self.api_server % "/v2/api/talk/memo/send", 
+            headers={
+                **self.default_header,
+                **{"Authorization": bearer_token}
+            },
+            #"property_keys":'["kakao_account.profile_image_url"]'
+            data={
+                "template_id" : template_id,
+                "template_args" : template_args
+            }
         ).json()
-        
-        

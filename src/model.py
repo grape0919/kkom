@@ -4,7 +4,7 @@ from tinydb import TinyDB, Query
 class UserModel:
 
     def __init__(self, path='db.json'):
-        self.db = TinyDB(path)
+        self.db = TinyDB(path).table('user')
 
     def upsert_user(self, user):
         if not self.db.search(Query().id == user.id):
@@ -57,18 +57,21 @@ class UserData:
 class TemplateModel:
 
     def __init__(self, path='db.json'):
-        self.db = TinyDB(path)
+        self.db = TinyDB(path).table('temp')
 
-    def upsert_key(self, user):
-        if not self.db.search(Query().id == user.id):
-            self.db.insert(user.serialize())
+    def upsert_key(self, temp):
+        self.db.upsert(temp.serialize(), Query().key == temp.key)
 
-    def get_key(self, user_id):
-        user = self.db.search(Query().id == user_id)
-        return TemplateData.deserialize(user[0])
+    def get_key(self, temp_name):
+        temp = self.db.search(Query().key == temp_name)
+        return TemplateData.deserialize(temp[0])
+    
+    def get_all_val(self):
+        temps = self.db.all()
+        return temps
 
-    def remove_user(self, user_id):
-        self.db.remove(Query().id == user_id)
+    def remove_val(self, temp_name):
+        self.db.remove(Query().key == temp_name)
         
 class TemplateData:
     
@@ -91,7 +94,7 @@ class TemplateData:
         }
     @staticmethod
     def deserialize(temp_val):
-        user = TemplateData()
-        user.key = temp_val['key']
-        user.value = temp_val['value']
-        return user
+        temp = TemplateData()
+        temp.key = temp_val['key']
+        temp.value = temp_val['value']
+        return temp

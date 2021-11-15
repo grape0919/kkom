@@ -20,7 +20,6 @@ const openWindowPopup = (url, name) => {
 
 // 카카오 OAuth
 const onKakao = async () => {
-	document.querySelector("#loading").classList.remove('display_none');
 
 	let url = await fetch("/auth/url", {
 		headers: { "Content-Type": "application/json" },
@@ -37,12 +36,12 @@ const onKakao = async () => {
 		
 		if(getCookie('logined') === 'true') {
 			window.location.reload();
+			document.querySelector("#real-body").classList.remove('blurEffect');
 		} else {
-			document.querySelector("#loading").classList.add('display_none');
+			document.querySelector("#real-body").classList.add('blurEffect');
 		}
 	}, 1000);
 }
-
 // OAuth 로그인 후, 리다이렉트 페이지
 const redirectPage = () => {
 	// 만약 /auth 으로 이동된다면 자동으로 해당 창은 닫습니다.
@@ -63,6 +62,8 @@ const autoLogin = async () => {
 		if (!!data['msg']) {
 			if (data['msg'] === `Missing cookie "access_token_cookie"`) {
 				console.log("자동로그인 실패");
+				
+				document.querySelector("#real-body").classList.add('blurEffect');
 				return;
 			} else if (data['msg'] === `Token has expired`) {
 				console.log("Access Token 만료");
@@ -71,6 +72,8 @@ const autoLogin = async () => {
 			}
 		} else {
 			console.log("자동로그인 성공");
+			
+			document.querySelector("#real-body").classList.remove('blurEffect');
 			const nickname = document.querySelector("#nickname");
 			const thumnail = document.querySelector("#thumnail");
 
