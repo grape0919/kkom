@@ -90,7 +90,7 @@ const onSendMe = async () => {
 		console.log(data)
 	}else{
 		console.log("전송실패")
-		window.alert("전송 실패:\n"+data['msg'])
+		//window.alert("전송 실패:\n"+data['msg'])
 	}
 }
 
@@ -121,7 +121,7 @@ const onSaveVal = async () => {
 		console.log(data)
 	}else{
 		console.log("저장 실패")
-		window.alert("저장 실패:\n"+data['msg'])
+		//window.alert("저장 실패:\n"+data['msg'])
 	}
 }
 
@@ -158,7 +158,7 @@ addModal.addEventListener('show.bs.modal', function (event) {
 			console.log(data)
 		}else{
 			console.log("등록 실패")
-			window.alert("등록 실패:\n"+data['msg'])
+			//window.alert("등록 실패:\n"+data['msg'])
 		}
 
 		$('#addModal').modal('hide');
@@ -184,7 +184,7 @@ function delVal(val_name){
 		console.log(data);
 	}else{
 		console.log("삭제 실패");
-		window.alert("삭제 실패:\n"+data['msg'])
+		//window.alert("삭제 실패:\n"+data['msg'])
 	}
 
 	location.reload();

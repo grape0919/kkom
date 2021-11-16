@@ -10,10 +10,14 @@ from flask_jwt_extended import (
     unset_jwt_cookies, create_refresh_token,
     jwt_refresh_token_required,
 )
-from config import CLIENT_ID, REDIRECT_URI
-from controller import Oauth
-from model import TemplateData, TemplateModel, UserModel, UserData
-import os
+import os,sys
+
+sys.path.append(os.path.dirname(__file__))
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from src.config import CLIENT_ID, REDIRECT_URI
+from src.controller import Oauth
+from src.model import TemplateData, TemplateModel, UserModel, UserData
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = "KKOM2"
@@ -53,7 +57,7 @@ def oauth_api():
     user = UserData(user)
     UserModel().upsert_user(user)
 
-    resp = make_response(render_template('index.html'))
+    resp = make_response(render_template('main.html'))
     access_token = create_access_token(identity=user.id)
     refresh_token = create_refresh_token(identity=user.id)
     resp.set_cookie("logined", "true")
@@ -270,8 +274,9 @@ def sendme():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
                                'kkom.ico', mimetype='image/vnd.microsoft.icon')
-    
-import webbrowser
 
+import webbrowser
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=80, debug=True)    
+        
+    webbrowser.open('http://localhost')
+    app.run(host="0.0.0.0",port=80, debug=True)

@@ -1,5 +1,5 @@
 import requests
-from config import CLIENT_ID, REDIRECT_URI
+from src.config import CLIENT_ID, REDIRECT_URI
 
 
 class Oauth:
