@@ -1,3 +1,4 @@
+import "kakao.js"
 
 const init2 = () => {
 	// 버튼 이벤트 등록
