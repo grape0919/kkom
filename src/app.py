@@ -14,7 +14,6 @@ import os,sys
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-
 from src.config import CLIENT_ID, REDIRECT_URI
 from src.controller import Oauth
 from src.model import TemplateData, TemplateModel, UserModel, UserData
@@ -57,7 +56,7 @@ def oauth_api():
     user = UserData(user)
     UserModel().upsert_user(user)
 
-    resp = make_response(render_template('main.html'))
+    resp = make_response(render_template('index.html'))
     access_token = create_access_token(identity=user.id)
     refresh_token = create_refresh_token(identity=user.id)
     resp.set_cookie("logined", "true")
@@ -165,7 +164,6 @@ def kkom():
     return render_template("main.html", values=temps)
 
 @app.route("/kkom/friends", methods=["GET"])
-@jwt_required
 def get_friends():
     '''
     친구목록가져오기
@@ -265,7 +263,12 @@ def sendme():
     if "result_code" in result:
         result = {
         "msg" : "succeed",
-        "code" : 200
+        "status" : 200
+        }
+    else:
+        result = {
+            "msg" : result['msg'],
+            "status" : -402
         }
         
     return jsonify(result)
@@ -274,9 +277,10 @@ def sendme():
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
                                'kkom.ico', mimetype='image/vnd.microsoft.icon')
-
+    
 import webbrowser
+
+webbrowser.open("http://localhost")
+
 if __name__ == '__main__':
-        
-    webbrowser.open('http://localhost')
     app.run(host="0.0.0.0",port=80, debug=True)

@@ -18,18 +18,18 @@ const onRefresh = async () => {
 		headers: { "Content-Type": "application/json"},
 		method: "GET"
 	})
-	.then(res => res.json());
-
-	if(data.code == -402){ //권한 신청
-		onAdditionalAgreements();
-	}
-
-	if (data.result) {
-		console.log(data)
-	}else{
-		console.log(data)
-		window.alert("친구목록 가져오기 실패:\n"+data['msg'])
-	}
+	.then(res => {
+		console.log(res)
+		let friends = res['elements']
+		console.log(friends)
+	}).catch(error => {
+		if(error['code'] == -402){ //권한 신청
+			onAdditionalAgreements();
+		}else{
+			console.log(error);
+			window.alert("친구목록 가져오기 실패:\n"+error['msg']);
+		}
+	});
 }
 
 
@@ -84,15 +84,55 @@ const onSendMe = async () => {
 		method: "POST",
 		headers: { "Content-Type": "application/json"},
 		body :JSON.stringify(body_temp)
-	}).then(res => res.json());
-
-	if (data.result == 200){
+	}).then(res => {
+		console.log(res.json())
+		window.alert("전송 성공")
+	}).catch(data => {
 		console.log(data)
-	}else{
-		console.log("전송실패")
-		//window.alert("전송 실패:\n"+data['msg'])
-	}
+		window.alert("전송:\n"+data['msg'])
+	})
 }
+
+//카카오링크API
+function onSendFriends(){
+	
+	onSaveVal();
+
+	var template_id = document.querySelector('#temp_id')
+	var template_vals = document.querySelectorAll('#value-list')
+	
+	let val_temp = {}
+	for(var i=0 ; i  < template_vals.length; i++){
+		console.log(template_vals[i])
+		value_name = template_vals[i].querySelector("#val_name").textContent.trim()
+		temp_val = template_vals[i].querySelector("#temp_val").value.trim()
+		val_temp[value_name] = temp_val
+	}
+	
+	let body_temp = {"template_id":template_id.value,
+					"template_args":val_temp}
+	Kakao.Link.sendCustom({
+		templateId: 62166,
+		templateArgs: {
+			title1:
+			'판교 맛집에 들르다. 다양하고 풍부한 퓨전 한정식. 깔끔한 내부 인테리어 라이언',
+			dist1:
+			'부담없는 가격에 푸짐하게 즐기는 점심메뉴 런치한정식, 불고기정식, 돼지 김치찌개 등',
+		},
+	})
+}
+
+function sendLink() {
+    Kakao.Link.sendCustom({
+      templateId: 3135,
+      templateArgs: {
+        title:
+          '판교 맛집에 들르다. 다양하고 풍부한 퓨전 한정식. 깔끔한 내부 인테리어 라이언',
+        description:
+          '부담없는 가격에 푸짐하게 즐기는 점심메뉴 런치한정식, 불고기정식, 돼지 김치찌개 등',
+      },
+    })
+  }
 
 const onSaveVal = async () => {
 	var template_id = document.querySelector('#temp_id')
@@ -115,14 +155,12 @@ const onSaveVal = async () => {
 		method: "PUT",
 		headers: { "Content-Type": "application/json"},
 		body :JSON.stringify(body_temp)
-	}).then(res => res.json());
+	}).catch(error => {
+		console.log(error)
+		window.alert("저장 실패:\n"+error)}
+	)
 
-	if (data.result){
-		console.log(data)
-	}else{
-		console.log("저장 실패")
-		//window.alert("저장 실패:\n"+data['msg'])
-	}
+
 }
 
 init2();
@@ -151,18 +189,12 @@ addModal.addEventListener('show.bs.modal', function (event) {
 			method: "POST",
 			headers: { "Content-Type": "application/json"},
 			body :JSON.stringify(body_temp)
-		}).then(res => res.json());
+		}).then(res => {
+			console.log(res);
+			$('#addModal').modal('hide');
+			window.location.reload();
+		})
 
-		console.log(data)
-		if (data.response){
-			console.log(data)
-		}else{
-			console.log("등록 실패")
-			//window.alert("등록 실패:\n"+data['msg'])
-		}
-
-		$('#addModal').modal('hide');
-		location.reload();
 	});
 });
 
@@ -176,16 +208,14 @@ function delVal(val_name){
 		method: "DELETE",
 		headers: { "Content-Type": "application/json"},
 		body :JSON.stringify(body_temp)
-	}).then(res => res.json());
-
-	console.log(data);
-
-	if (data.response){
-		console.log(data);
-	}else{
+	}).then(res => {
+		console.log(res);
+		window.alert("삭제");
+		
+		location.reload();
+	}).catch(error => {
 		console.log("삭제 실패");
-		//window.alert("삭제 실패:\n"+data['msg'])
-	}
+		window.alert("삭제 실패:\n"+error['msg']);
+	})
 
-	location.reload();
 }
