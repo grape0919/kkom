@@ -1,17 +1,4 @@
 
-const init2 = () => {
-	// 버튼 이벤트 등록
-
-	document.querySelector("#friend").addEventListener('click', onRefresh);
-	document.querySelector("#sendMe").addEventListener("click", onSendMe);
-	document.querySelector("#temp-save").addEventListener("click", onSaveVal);
-	
-	// document.querySelector("#temp-val-del").addEventListener('click', onDelVal);
-
-	// document.querySelector("#send").addEventListener('click', onSend);
-	
-}
-
 //친구목록가져오기
 const onRefresh = async () => {
 	let data = await fetch("/kkom/friends", {

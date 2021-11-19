@@ -1,15 +1,25 @@
+
+// SDK를 초기화 합니다. 사용할 앱의 JavaScript 키를 설정해 주세요.
+Kakao.init('59696556d14a0d89ba1a4328b36ef6fb');
+
+// SDK 초기화 여부를 판단합니다.
+console.log(Kakao.isInitialized());
+
 // # 시작 함수
 // 해당파일제일 최하단에 실행함수 존재함.
 const init = () => {
 	// 버튼 이벤트 등록
 	document.querySelector("#kakao").addEventListener('click', onKakao);
 	document.querySelector("#logout").addEventListener('click', onLogout);
-	
+
 	// 자동 로그인 실행
 	autoLogin();
 
 	// 해당 함수는 Router 대신 실행하는 함수입니다.
 	redirectPage();
+
+	document.querySelector("#sendMe").addEventListener("click", onSendMe);
+	document.querySelector("#temp-save").addEventListener("click", onSaveVal);
 }
 
 // 팝업창 열기
@@ -25,17 +35,21 @@ const onKakao = async () => {
 		headers: { "Content-Type": "application/json" },
 		method: "GET"
 	})
-	.then(res => res.json())
-	.then(res => res['kakao_oauth_url']);
+		.then(res => res.json())
+		.then(res => res['kakao_oauth_url']);
 
 	const newWindow = openWindowPopup(url, "카카오톡 로그인");
 
-	const checkConnect = setInterval(function() {
+	const checkConnect = setInterval(function () {
 		if (!newWindow || !newWindow.closed) return;
 		clearInterval(checkConnect);
-		
-		if(getCookie('logined') === 'true') {
+
+		if (getCookie('logined') === 'true') {
 			window.location.reload();
+			real_token = getCookie("kakako_access_token");
+			console.log("token : " + real_token);
+			Kakao.Auth.setAccessToken(real_token);
+			console.log(Kakao.Auth.getStatusInfo())
 			document.querySelector("#real-body").classList.remove('blurEffect');
 		} else {
 			document.querySelector("#real-body").classList.add('blurEffect');
@@ -57,12 +71,12 @@ const autoLogin = async () => {
 		headers: { "Content-Type": "application/json" },
 		method: "GET"
 	})
-	.then(res => res.json());
+		.then(res => res.json());
 	try {
 		if (!!data['msg']) {
 			if (data['msg'] === `Missing cookie "access_token_cookie"`) {
 				console.log("자동로그인 실패");
-				
+
 				document.querySelector("#real-body").classList.add('blurEffect');
 				return;
 			} else if (data['msg'] === `Token has expired`) {
@@ -72,7 +86,7 @@ const autoLogin = async () => {
 			}
 		} else {
 			console.log("자동로그인 성공");
-			
+
 			document.querySelector("#real-body").classList.remove('blurEffect');
 			const nickname = document.querySelector("#nickname");
 			const thumnail = document.querySelector("#thumnail");
@@ -97,7 +111,7 @@ const refreshToken = async () => {
 		headers: { "Content-Type": "application/json" },
 		method: "GET"
 	})
-	.then(res => res.json());
+		.then(res => res.json());
 	if (data.result) {
 		console.log("Access Token 갱신");
 		autoLogin();
@@ -109,7 +123,7 @@ const refreshToken = async () => {
 			document.querySelector('#logout').classList.add('display_none');
 			document.querySelector("#nickname").classList.add('display_none');
 			document.querySelector("#thumnail").classList.add('display_none');
-	
+
 			onKakao();
 			return;
 		}
@@ -124,6 +138,13 @@ const refreshToken = async () => {
 		document.querySelector('#logout').classList.add('display_none');
 		document.querySelector("#nickname").classList.add('display_none');
 		document.querySelector("#thumnail").classList.add('display_none');
+
+		real_token = getCookie("kakako_access_token");
+		console.log("token : " + real_token);
+		Kakao.Auth.setAccessToken(real_token);
+
+		console.log(Kakao.Auth.getStatusInfo())
+
 	}
 }
 
@@ -133,7 +154,7 @@ const onLogout = async () => {
 		headers: { "Content-Type": "application/json" },
 		method: "GET"
 	})
-	.then(res => res.json());
+		.then(res => res.json());
 
 	if (data.result) {
 		console.log("로그아웃 성공");
@@ -145,15 +166,219 @@ const onLogout = async () => {
 }
 
 const getCookie = (cookieName) => {
-	let cookieValue=null;
-	if(document.cookie){
-		let array=document.cookie.split((escape(cookieName)+'='));
-		if(array.length >= 2){
-			let arraySub=array[1].split(';');
-			cookieValue=unescape(arraySub[0]);
+	let cookieValue = null;
+	if (document.cookie) {
+		let array = document.cookie.split((escape(cookieName) + '='));
+		if (array.length >= 2) {
+			let arraySub = array[1].split(';');
+			cookieValue = unescape(arraySub[0]);
 		}
 	}
 	return cookieValue;
 }
 
+
+//친구목록가져오기
+// const onRefresh = async () => {
+// 	let data = await fetch("/kkom/friends", {
+// 		headers: { "Content-Type": "application/json" },
+// 		method: "GET"
+// 	})
+// 		.then(res => {
+// 			console.log(res)
+// 			let friends = res['elements']
+// 			console.log(friends)
+// 		}).catch(error => {
+// 			if (error['code'] == -402) { //권한 신청
+// 				onAdditionalAgreements();
+// 			} else {
+// 				console.log(error);
+// 				window.alert("친구목록 가져오기 실패:\n" + error['msg']);
+// 			}
+// 		});
+// }
+
+
+
+const onAdditionalAgreements = async () => {
+
+	let url = await fetch("/auth/url/agreements", {
+		headers: { "Content-Type": "application/json" },
+		method: "GET"
+	})
+		.then(res => res.json())
+		.then(res => res['kakao_oauth_url']);
+
+	const newWindow = openWindowPopup(url, "친구 목록 가져오기 동의");
+
+	const checkConnect = setInterval(function () {
+		if (!newWindow || !newWindow.closed) return;
+		clearInterval(checkConnect);
+
+		if (getCookie('logined') === 'true') {
+			window.location.reload();
+			document.querySelector("#real-body").classList.remove('blurEffect');
+		} else {
+			document.querySelector("#real-body").classList.add('blurEffect');
+		}
+	}, 1000);
+}
+
+
+//나에게 전송
+const onSendMe = async () => {
+
+	onSaveVal();
+
+	var template_id = document.querySelector('#temp_id')
+	var template_vals = document.querySelectorAll('#value-list')
+
+	let val_temp = {}
+	for (var i = 0; i < template_vals.length; i++) {
+		console.log(template_vals[i])
+		value_name = template_vals[i].querySelector("#val_name").textContent.trim()
+		temp_val = template_vals[i].querySelector("#temp_val").value.trim()
+		val_temp[value_name] = temp_val
+	}
+
+	let body_temp = {
+		"template_id": template_id.value,
+		"template_args": val_temp
+	}
+
+	console.log(body_temp)
+
+	let data = await fetch("/kkom/sendme", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body_temp)
+	}).then(res => {
+		console.log(res.json())
+		window.alert("전송 성공")
+	}).catch(data => {
+		console.log(data)
+		window.alert("전송:\n" + data['msg'])
+	})
+}
+
+//카카오링크API
+function onSendFriends() {
+
+	onSaveVal();
+
+	var template_id = document.querySelector('#temp_id')
+	var template_vals = document.querySelectorAll('#value-list')
+
+	let val_temp = {}
+	for (var i = 0; i < template_vals.length; i++) {
+		console.log(template_vals[i])
+		value_name = template_vals[i].querySelector("#val_name").textContent.trim()
+		temp_val = template_vals[i].querySelector("#temp_val").value.trim()
+		val_temp[value_name] = temp_val
+	}
+
+	let body_temp = {
+		"template_id": template_id.value,
+		"template_args": val_temp
+	}
+	Kakao.Auth.getStatusInfo(({ status }) => {
+		console.log(status)
+	})
+	Kakao.Link.sendCustom({
+		templateId: 62166,
+		templateArgs: val_temp,
+	});
+}
+
+const onSaveVal = async () => {
+	var template_id = document.querySelector('#temp_id')
+	var template_vals = document.querySelectorAll('#value-list')
+
+	let val_temp = {}
+	for (var i = 0; i < template_vals.length; i++) {
+		console.log(template_vals[i])
+		value_name = template_vals[i].querySelector("#val_name").textContent.trim()
+		temp_val = template_vals[i].querySelector("#temp_val").value.trim()
+		val_temp[value_name] = temp_val
+	}
+
+	let body_temp = {
+		"template_id": template_id.value,
+		"template_args": val_temp
+	}
+
+	console.log(body_temp)
+
+	let data = await fetch("/kkom/savetemp", {
+		method: "PUT",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body_temp)
+	}).catch(error => {
+		console.log(error)
+		window.alert("저장 실패:\n" + error)
+	}
+	)
+
+
+}
+
+
 init();
+
+
+
+var addModal = document.getElementById('addModal')
+addModal.addEventListener('show.bs.modal', function (event) {
+	// Button that triggered the modal
+	var button = event.relatedTarget;
+	// Extract info from data-bs-* attributes
+	var modalBodyInput = addModal.querySelector('.modal-body input');
+
+	modalBodyInput.value = '';
+
+	var saveButton = addModal.querySelector('.modal-footer button')
+
+	onSaveVal();
+
+	saveButton.addEventListener('click', function (event) {
+
+		var val_name = addModal.querySelector('#add_temp_name')
+		console.log(val_name.value)
+
+		let body_temp = { "val_name": val_name.value }
+
+		let data = fetch("/kkom/addval", {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body_temp)
+		}).then(res => {
+			console.log(res);
+			$('#addModal').modal('hide');
+			window.location.reload();
+		})
+
+	});
+});
+
+
+function delVal(val_name) {
+
+	onSaveVal();
+
+	let body_temp = { "val_name": val_name };
+
+	let data = fetch("/kkom/delval", {
+		method: "DELETE",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body_temp)
+	}).then(res => {
+		console.log(res);
+		window.alert("삭제");
+
+		location.reload();
+	}).catch(error => {
+		console.log("삭제 실패");
+		window.alert("삭제 실패:\n" + error['msg']);
+	})
+
+}

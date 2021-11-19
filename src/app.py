@@ -56,7 +56,7 @@ def oauth_api():
     user = UserData(user)
     UserModel().upsert_user(user)
 
-    resp = make_response(render_template('index.html'))
+    resp = make_response(render_template('main.html'))
     access_token = create_access_token(identity=user.id)
     refresh_token = create_refresh_token(identity=user.id)
     resp.set_cookie("logined", "true")

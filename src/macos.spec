@@ -1,4 +1,4 @@
-# -*- mode: python ; coding: utf-8 -*-
+m# -*- mode: python ; coding: utf-8 -*-
 
 
 block_cipher = None
@@ -33,9 +33,12 @@ exe = EXE(pyz,
           upx=True,
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=True,
+          console=False,
           disable_windowed_traceback=False,
           target_arch=None,
           codesign_identity=None,
-          entitlements_file=None,
-          icon='static\\img\\kkom.ico' )
+          entitlements_file=None )
+app = BUNDLE(exe,
+             name='KKOM.app',
+             icon=None,
+             bundle_identifier=None)
