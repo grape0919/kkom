@@ -277,15 +277,12 @@ function onSendFriends() {
 		val_temp[value_name] = temp_val
 	}
 
-	let body_temp = {
-		"template_id": template_id.value,
-		"template_args": val_temp
-	}
 	Kakao.Auth.getStatusInfo(({ status }) => {
 		console.log(status)
 	})
+	console.log(template_id.value)
 	Kakao.Link.sendCustom({
-		templateId: 62166,
+		templateId: parseInt(template_id.value),
 		templateArgs: val_temp,
 	});
 }
