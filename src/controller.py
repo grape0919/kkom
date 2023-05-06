@@ -59,6 +59,24 @@ class Oauth:
         )
         return req.json()
 
+    def userids(self, admin_key):
+        user_list = []
+        temp = requests.get(url=self.api_server % "/v1/user/ids", 
+        headers={
+            **{"Authorization": admin_key}
+        }).json()
+        user_list.extend(temp['elements'])
+        after_url = temp['after_url'] if 'after_url' in temp else False
+        while(after_url):
+            temp = requests.get(url=after_url, 
+            headers={
+                **{"Authorization": admin_key}
+            }).json()
+            user_list.extend(temp['elements'])
+            after_url = temp['after_url'] if 'after_url' in temp else False
+            
+        
+        return user_list
         
     def sendme(self, bearer_token, template_id, template_args):
         return requests.post(
@@ -69,7 +87,28 @@ class Oauth:
             },
             #"property_keys":'["kakao_account.profile_image_url"]'
             data={
-                "template_id" : template_id,
-                "template_args" : template_args
+                "template_id" : template_id
+                #  "template_args" : template_args
             }
         ).json()
+        
+    def sendall(self, bearer_token, template_id, template_args, user_list):
+        for user in user_list:
+            try:
+                requests.post(
+                    url=self.api_server % "/v1/api/talk/friends/message/send", 
+                    headers={
+                        **self.default_header,
+                        **{"Authorization": bearer_token}
+                    },
+                    #"property_keys":'["kakao_account.profile_image_url"]'
+                    data={
+                        "template_id" : template_id,
+                        "template_args" : template_args
+                    }
+                ).json()
+            except:
+                print(user," 에게 전송실패")
+        return {
+            "result_code": 200
+        }

@@ -1,0 +1,131 @@
+html, body {
+	scroll-behavior: auto;
+	-webkit-overflow-scrolling: touch;
+	font-size: 16px;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+#real-body{
+  height: 100%;
+  width: 100%;
+}
+
+.display_none {
+  display: none !important;
+}
+
+@keyframes Loading {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.thumnail {
+  width: 30px;
+  height: 30px;
+  border-radius: 30px;
+  margin-right: 10px;
+}
+
+.nickname {
+  font-size: 14px;
+  font-weight: 600;
+  color: #222831;
+}
+
+.blurEffect {
+  filter: blur(10px);
+  -webkit-filter: blur(10px);
+}
+
+.foo{
+  padding-top: 9px;
+  padding-bottom: 9px;
+  color: #eeeeee8b;
+  background-color: #393E46;
+  font-size: 11px;
+  font-weight: 200;
+}
+.foo a{
+  color: #eeeeee8b;
+  font-weight:600;
+}
+.bg-cst-primary{
+  background-color: #FFD369 !important;
+}
+.bg-cst-lightdark{
+  background-color: #393E46 !important;
+}
+
+.bg-cst-dark{
+  background-color: #222831 !important;
+}
+.text-cst-light{
+  color: #eeeeee;
+}
+.text-cst-lightdark{
+  color: #393E46 !important;
+}
+.text-cst-dark{
+  color: #222831 !important;
+}
+
+.sidebar{
+  width: 260px;
+  height: 100%;
+  background-color: #FFD369;
+  box-shadow: 6px 0px 10px lightgray;
+}
+
+.sidebar .sidebar-title{
+  font-size: 17px;
+  font-weight: 600;
+  padding-top: 10px;
+  color: #393E46;
+  background-color: #ebb73c;
+}
+
+.sidebar .sidebar-item{
+  font-size: 16px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  padding-left: 25px;
+  border-bottom: 1px solid #8f98a572 !important;
+  color: #0d587b;
+}
+
+.sidebar .sidebar-item .sidebar-item-bi{
+  font-size: 17px;
+}
+.sidebar .sidebar-item:hover{
+  background-color: #dcb65e61;
+}
+
+.sidebar .sidebar-new-item{
+  padding: 0px;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #8f98a572 !important;
+  text-align: center;
+  color: #0d587b;
+}
+.sidebar .sidebar-new-item:hover{
+  background-color: #dcb65e61;
+}
+
+
+
+
+.navbar {
+  background-color: #393E46;
+  color: #eeeeee;
+}
+
+.navbar .navbar-brand{
+  color: #eeeeee;
+}

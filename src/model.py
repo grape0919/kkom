@@ -1,9 +1,11 @@
 from tinydb import TinyDB, Query
-
+import os
 
 class UserModel:
 
     def __init__(self, path='db.json'):
+        basdir = os.path.abspath(os.getcwd())
+        path = os.path.join(basdir, 'db.json')
         self.db = TinyDB(path).table('user')
 
     def upsert_user(self, user):
@@ -60,41 +62,55 @@ class TemplateModel:
         self.db = TinyDB(path).table('temp')
 
     def upsert_key(self, temp):
-        self.db.upsert(temp.serialize(), Query().key == temp.key)
+        self.db.upsert(temp.serialize(), Query().key == temp.key and Query().temp_id == temp.temp_id)
 
-    def get_key(self, temp_name):
-        temp = self.db.search(Query().key == temp_name)
+    def get_key(self, temp_name, temp_id):
+        temp = self.db.search(Query().key == temp_name and Query().temp_id == temp_id)
         return TemplateData.deserialize(temp[0])
+    
+    def get_temp(self, temp_id):
+        temp_key_value = self.db.search(Query().temp_id == int(temp_id))
+        temp_key_value = [ TemplateData.deserialize(temp) for temp in temp_key_value]
+        return temp_key_value
+    
+    def get_temp_list(self):
+        temp_key_value = self.db.all()
+        temp_key_value = [ TemplateData.deserialize(temp) for temp in temp_key_value]
+        return temp_key_value
     
     def get_all_val(self):
         temps = self.db.all()
         return temps
 
     def remove_val(self, temp_name):
-        self.db.remove(Query().key == temp_name)
+        self.db.remove(Query().key == temp_name and Query().temp_id == temp.temp_id)
         
 class TemplateData:
     
     def __init__(self, temp_val=None):
         if temp_val:
+            self.temp_id = temp_val['temp_id']
             self.key = temp_val['key']
             self.value = temp_val['value']
         else:
+            self.temp_id = None
             self.key = None
             self.value = None
 
     def __str__(self):
-        return "<TemplateData>(key:%s, value:%s)" \
+        return "<TemplateData>(temp_id, key:%s, value:%s)" \
                 % (self.key, self.value)
 
     def serialize(self):
         return {
+            "temp_id": self.temp_id,
             "key": self.key,
             "value": self.value
         }
     @staticmethod
     def deserialize(temp_val):
         temp = TemplateData()
+        temp.temp_id = temp_val['temp_id']
         temp.key = temp_val['key']
         temp.value = temp_val['value']
         return temp

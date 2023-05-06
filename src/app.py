@@ -14,7 +14,7 @@ import os,sys
 
 sys.path.append(os.path.dirname(__file__))
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
-from src.config import CLIENT_ID, REDIRECT_URI
+from src.config import CLIENT_ID, REDIRECT_URI, ADMIN_KEY
 from src.controller import Oauth
 from src.model import TemplateData, TemplateModel, UserModel, UserData
 
@@ -159,9 +159,26 @@ def kkom():
     kkom 메인페이지
     '''
     
-    temps = TemplateModel().get_all_val()
+    temps = TemplateModel().get_temp_list()
+    temps_id = set([temp.temp_id for temp in temps])
+    user_list = get_userids().json
+    num_of_user = len(user_list)
+    return render_template("main.html", temps_id=temps_id, num_of_user = num_of_user)
+
+@app.route("/kkom/<temp_id>")
+def kkom_detail(temp_id):
+    '''
+    kkom 메인페이지
+    '''
     
-    return render_template("main.html", values=temps)
+    temps = TemplateModel().get_temp_list()
+    temps_id = set([temp.temp_id for temp in temps])
+    user_list = get_userids().json
+    num_of_user = len(user_list)
+    
+    values = TemplateModel().get_temp(temp_id)
+    
+    return render_template("main.html", temp_id=temp_id, values=values, temps_id=temps_id, num_of_user = num_of_user)
 
 @app.route("/kkom/friends", methods=["GET"])
 def get_friends():
@@ -172,7 +189,16 @@ def get_friends():
     friends = Oauth().friends("Bearer " + access_token)
     return jsonify(friends)
     
+@app.route("/kkom/users", methods=["GET"])
+def get_userids():
+    '''
+    사용자목록가져오기
+    '''
+    # access_token = request.cookies.get('kakako_access_token')
+    friends = Oauth().userids("KakaoAK " + ADMIN_KEY)
+    return jsonify(friends)
     
+
 @app.route("/kkom/addval", methods=["POST"])
 def add_value():
     '''
@@ -273,14 +299,41 @@ def sendme():
         
     return jsonify(result)
 
+
+@app.route("/kkom/sendall", methods=["POST"])
+def sendall():
+    '''
+    모두에게 보내기
+    '''
+    req = request.get_json()
+    template_id = req["template_id"]
+    template_args = req["template_args"]
+    
+    access_token = request.cookies.get('kakako_access_token')
+    
+    result = Oauth().sendall("Bearer " + access_token, template_id, json.dumps(template_args, ensure_ascii=True), get_userids().json)
+    
+    if "result_code" in result:
+        result = {
+        "msg" : "succeed",
+        "status" : 200
+        }
+    else:
+        result = {
+            "msg" : result['msg'],
+            "status" : -402
+        }
+        
+    return jsonify(result)
+
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static', 'img'),
-                               'kkom.ico', mimetype='image/vnd.microsoft.icon')
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
     
 import webbrowser
 
-webbrowser.open("http://localhost")
+webbrowser.open("http://localhost:7055")
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0",port=80, debug=True)
+    app.run(host="0.0.0.0",port=7055, debug=False)

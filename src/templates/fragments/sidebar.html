@@ -1,0 +1,10 @@
+
+<div class="sidebar">
+    <div class="sidebar-title text-center border-bottom border-dark shadow-sm pb-2 bg-warning">템플릿</div>
+    {% for temp in temps_id %}
+    <div>
+        <a class="w-100 btn sidebar-item text-start ps-3" href="/kkom/{{temp}}"><i class="bi bi-file-richtext sidebar-item-bi"></i>  {{temp}}</a>
+    </div>
+    {% endfor %}
+    <div class="sidebar-new-item btn"><i class="bi bi-file-earmark-plus sidebar-item-new-bi fs-large"></i> 템플릿 추가</div>
+</div>
